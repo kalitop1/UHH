@@ -1,15 +1,579 @@
-<?php
-require "../config/db.php";
-?>
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>رافع الملفات الخاص بي</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        :root {
+            --github-black: #0d1117;
+            --github-gray: #161b22;
+            --github-blue: #58a6ff;
+            --github-border: #30363d;
+        }
+        
+        body {
+            background-color: var(--github-black);
+            color: #c9d1d9;
+            min-height: 100vh;
+        }
+        
+        /* Header like GitHub */
+        .header {
+            background-color: var(--github-gray);
+            border-bottom: 1px solid var(--github-border);
+            padding: 16px 32px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 20px;
+            font-weight: 600;
+        }
+        
+        .logo i {
+            color: #f0f6fc;
+            font-size: 24px;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .nav-links a {
+            color: #c9d1d9;
+            text-decoration: none;
+            font-size: 14px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+        
+        .nav-links a:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Main Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 32px;
+        }
+        
+        /* Upload Box */
+        .upload-box {
+            background-color: var(--github-gray);
+            border: 2px dashed var(--github-border);
+            border-radius: 12px;
+            padding: 60px 40px;
+            text-align: center;
+            margin-bottom: 30px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .upload-box:hover {
+            border-color: var(--github-blue);
+            background-color: rgba(88, 166, 255, 0.05);
+        }
+        
+        .upload-icon {
+            font-size: 64px;
+            color: #8b949e;
+            margin-bottom: 20px;
+        }
+        
+        .upload-text h2 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: white;
+        }
+        
+        .upload-text p {
+            color: #8b949e;
+            margin-bottom: 20px;
+        }
+        
+        .upload-btn {
+            background-color: #238636;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.2s;
+        }
+        
+        .upload-btn:hover {
+            background-color: #2ea043;
+        }
+        
+        /* File List */
+        .files-section {
+            background-color: var(--github-gray);
+            border: 1px solid var(--github-border);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        .files-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--github-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .files-header h3 {
+            font-size: 18px;
+        }
+        
+        .files-list {
+            padding: 0;
+        }
+        
+        .file-item {
+            display: flex;
+            align-items: center;
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--github-border);
+            transition: background 0.2s;
+        }
+        
+        .file-item:hover {
+            background-color: rgba(255, 255, 255, 0.03);
+        }
+        
+        .file-icon {
+            margin-left: 15px;
+            font-size: 20px;
+            width: 30px;
+            text-align: center;
+        }
+        
+        .file-icon.html { color: #e34c26; }
+        .file-icon.css { color: #563d7c; }
+        .file-icon.js { color: #f1e05a; }
+        .file-icon.img { color: #a371f7; }
+        .file-icon.default { color: #8b949e; }
+        
+        .file-info {
+            flex: 1;
+        }
+        
+        .file-name {
+            font-weight: 600;
+            color: white;
+            margin-bottom: 4px;
+        }
+        
+        .file-url {
+            font-size: 12px;
+            color: #8b949e;
+            background-color: rgba(255, 255, 255, 0.05);
+            padding: 4px 8px;
+            border-radius: 4px;
+            word-break: break-all;
+        }
+        
+        .file-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .file-btn {
+            background: none;
+            border: 1px solid var(--github-border);
+            color: #c9d1d9;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        
+        .file-btn:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-color: #8b949e;
+        }
+        
+        .copy-btn {
+            background-color: #238636;
+            border: none;
+        }
+        
+        .copy-btn:hover {
+            background-color: #2ea043;
+        }
+        
+        /* Notification */
+        .notification {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background-color: #238636;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            transition: transform 0.5s;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .notification.show {
+            transform: translateX(-50%) translateY(0);
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 15px;
+                padding: 20px;
+            }
+            
+            .nav-links {
+                width: 100%;
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+            
+            .container {
+                padding: 20px;
+            }
+            
+            .upload-box {
+                padding: 40px 20px;
+            }
+            
+            .file-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            
+            .file-actions {
+                width: 100%;
+                justify-content: flex-end;
+            }
+        }
+        
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 30px;
+            color: #8b949e;
+            font-size: 14px;
+            border-top: 1px solid var(--github-border);
+            margin-top: 50px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">
+            <i class="fab fa-github"></i>
+            <span>رافع الملفات</span>
+        </div>
+        <nav class="nav-links">
+            <a href="#"><i class="fas fa-cloud-upload-alt"></i> رفع ملف</a>
+            <a href="#files"><i class="fas fa-file"></i> ملفاتي</a>
+            <a href="#"><i class="fas fa-link"></i> روابط</a>
+            <a href="#"><i class="fas fa-cog"></i> إعدادات</a>
+        </nav>
+    </header>
 
-<h1>KALI LIBRARY</h1>
+    <!-- Main Content -->
+    <main class="container">
+        <!-- Upload Area -->
+        <section class="upload-box" id="uploadBox">
+            <div class="upload-icon">
+                <i class="fas fa-cloud-upload-alt"></i>
+            </div>
+            <div class="upload-text">
+                <h2>اسحب الملفات هنا</h2>
+                <p>أو انقر لاختيار الملفات من جهازك</p>
+                <p style="font-size: 14px; margin-top: 10px;">يدعم: صور، PDF، HTML، CSS، JavaScript (حتى 10MB لكل ملف)</p>
+            </div>
+            <input type="file" id="fileInput" multiple style="display: none;">
+            <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
+                <i class="fas fa-plus"></i> اختر الملفات
+            </button>
+        </section>
 
-<?php
-$libs = $db->query("SELECT * FROM libs ORDER BY id DESC");
-foreach ($libs as $l) {
-    echo "<div>";
-    echo "<h3>{$l['name']}</h3>";
-    echo "<a href='/lib/{$l['slug']}'>Download</a>";
-    echo "</div><hr>";
-}
-?>
+        <!-- Files List -->
+        <section class="files-section" id="files">
+            <div class="files-header">
+                <h3><i class="fas fa-file"></i> الملفات المرفوعة</h3>
+                <div>
+                    <span id="fileCount">0 ملف</span>
+                </div>
+            </div>
+            <div class="files-list" id="filesList">
+                <!-- Files will be added here -->
+                <div class="empty-state" style="text-align: center; padding: 40px; color: #8b949e;">
+                    <i class="fas fa-folder-open" style="font-size: 48px; margin-bottom: 15px;"></i>
+                    <p>لا توجد ملفات مرفوعة بعد</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Notification -->
+    <div class="notification" id="notification">
+        <i class="fas fa-check-circle"></i>
+        <span id="notificationText">تم نسخ الرابط بنجاح!</span>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>© 2023 رافع الملفات الخاص بي | جميع الملفات محفوظة على جهازك</p>
+        <p style="margin-top: 10px; font-size: 12px;">
+            هذا الموقع يعمل على تخزين الملفات محلياً في متصفحك
+        </p>
+    </footer>
+
+    <script>
+        // تخزين الملفات
+        let uploadedFiles = JSON.parse(localStorage.getItem('myFiles')) || [];
+        
+        // عناصر DOM
+        const uploadBox = document.getElementById('uploadBox');
+        const fileInput = document.getElementById('fileInput');
+        const filesList = document.getElementById('filesList');
+        const fileCount = document.getElementById('fileCount');
+        const notification = document.getElementById('notification');
+        const notificationText = document.getElementById('notificationText');
+        
+        // تحديث عرض الملفات
+        function updateFilesDisplay() {
+            if (uploadedFiles.length === 0) {
+                filesList.innerHTML = `
+                    <div class="empty-state" style="text-align: center; padding: 40px; color: #8b949e;">
+                        <i class="fas fa-folder-open" style="font-size: 48px; margin-bottom: 15px;"></i>
+                        <p>لا توجد ملفات مرفوعة بعد</p>
+                    </div>
+                `;
+                fileCount.textContent = '0 ملف';
+                return;
+            }
+            
+            filesList.innerHTML = '';
+            uploadedFiles.forEach((file, index) => {
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-item';
+                
+                // تحديد أيقونة الملف حسب النوع
+                let fileIcon = 'default';
+                let iconClass = 'default';
+                
+                if (file.type.includes('image')) {
+                    fileIcon = 'fas fa-image';
+                    iconClass = 'img';
+                } else if (file.type.includes('pdf')) {
+                    fileIcon = 'fas fa-file-pdf';
+                    iconClass = 'default';
+                } else if (file.type.includes('html')) {
+                    fileIcon = 'fab fa-html5';
+                    iconClass = 'html';
+                } else if (file.type.includes('css')) {
+                    fileIcon = 'fab fa-css3-alt';
+                    iconClass = 'css';
+                } else if (file.type.includes('javascript')) {
+                    fileIcon = 'fab fa-js-square';
+                    iconClass = 'js';
+                } else {
+                    fileIcon = 'fas fa-file';
+                    iconClass = 'default';
+                }
+                
+                // إنشاء رابط وهمي (في حالة واقعية، هذا يكون رابط خادمك)
+                const fakeUrl = `https://موقعك.com/files/${file.name}`;
+                
+                fileItem.innerHTML = `
+                    <div class="file-icon ${iconClass}">
+                        <i class="${fileIcon}"></i>
+                    </div>
+                    <div class="file-info">
+                        <div class="file-name">${file.name}</div>
+                        <div class="file-url" id="url-${index}">${fakeUrl}</div>
+                    </div>
+                    <div class="file-actions">
+                        <button class="file-btn copy-btn" onclick="copyUrl(${index})">
+                            <i class="fas fa-copy"></i> نسخ الرابط
+                        </button>
+                        <button class="file-btn" onclick="downloadFile(${index})">
+                            <i class="fas fa-download"></i> تحميل
+                        </button>
+                        <button class="file-btn" onclick="deleteFile(${index})" style="color: #f85149;">
+                            <i class="fas fa-trash"></i> حذف
+                        </button>
+                    </div>
+                `;
+                
+                filesList.appendChild(fileItem);
+            });
+            
+            fileCount.textContent = `${uploadedFiles.length} ملف${uploadedFiles.length > 1 ? 'ات' : ''}`;
+        }
+        
+        // نسخ الرابط
+        function copyUrl(index) {
+            const urlElement = document.getElementById(`url-${index}`);
+            const textArea = document.createElement('textarea');
+            textArea.value = urlElement.textContent;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            
+            notificationText.textContent = 'تم نسخ الرابط إلى الحافظة!';
+            showNotification();
+        }
+        
+        // تحميل الملف
+        function downloadFile(index) {
+            const file = uploadedFiles[index];
+            const url = URL.createObjectURL(file);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = file.name;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            notificationText.textContent = `جاري تحميل ${file.name}`;
+            showNotification();
+        }
+        
+        // حذف الملف
+        function deleteFile(index) {
+            if (confirm('هل أنت متأكد من حذف هذا الملف؟')) {
+                uploadedFiles.splice(index, 1);
+                localStorage.setItem('myFiles', JSON.stringify(uploadedFiles));
+                updateFilesDisplay();
+                
+                notificationText.textContent = 'تم حذف الملف بنجاح';
+                showNotification();
+            }
+        }
+        
+        // عرض الإشعار
+        function showNotification() {
+            notification.classList.add('show');
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+        
+        // رفع الملفات
+        fileInput.addEventListener('change', function(e) {
+            const files = Array.from(e.target.files);
+            
+            files.forEach(file => {
+                // تحقق من حجم الملف (10MB حد أقصى)
+                if (file.size > 10 * 1024 * 1024) {
+                    notificationText.textContent = `الملف ${file.name} أكبر من 10MB`;
+                    showNotification();
+                    return;
+                }
+                
+                uploadedFiles.push(file);
+            });
+            
+            localStorage.setItem('myFiles', JSON.stringify(uploadedFiles));
+            updateFilesDisplay();
+            
+            notificationText.textContent = `تم رفع ${files.length} ملف${files.length > 1 ? 'ات' : ''} بنجاح`;
+            showNotification();
+            
+            // إعادة تعيين حقل الملف
+            fileInput.value = '';
+        });
+        
+        // سحب وإفلات الملفات
+        uploadBox.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            uploadBox.style.borderColor = '#58a6ff';
+            uploadBox.style.backgroundColor = 'rgba(88, 166, 255, 0.1)';
+        });
+        
+        uploadBox.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            uploadBox.style.borderColor = '#30363d';
+            uploadBox.style.backgroundColor = '';
+        });
+        
+        uploadBox.addEventListener('drop', function(e) {
+            e.preventDefault();
+            uploadBox.style.borderColor = '#30363d';
+            uploadBox.style.backgroundColor = '';
+            
+            const files = Array.from(e.dataTransfer.files);
+            
+            files.forEach(file => {
+                if (file.size > 10 * 1024 * 1024) {
+                    notificationText.textContent = `الملف ${file.name} أكبر من 10MB`;
+                    showNotification();
+                    return;
+                }
+                
+                uploadedFiles.push(file);
+            });
+            
+            localStorage.setItem('myFiles', JSON.stringify(uploadedFiles));
+            updateFilesDisplay();
+            
+            notificationText.textContent = `تم رفع ${files.length} ملف${files.length > 1 ? 'ات' : ''} بنجاح`;
+            showNotification();
+        });
+        
+        // التهيئة الأولية
+        document.addEventListener('DOMContentLoaded', function() {
+            updateFilesDisplay();
+            
+            // إضافة بعض الملفات المثال
+            if (uploadedFiles.length === 0) {
+                // نضيف مثال لملف HTML
+                const htmlContent = `<!DOCTYPE html>
+<html>
+<head>
+    <title>موقعي</title>
+</head>
+<body>
+    <h1>مرحباً!</h1>
+    <p>هذا ملف HTML مثال</p>
+</body>
+</html>`;
+                
+                const htmlFile = new File([htmlContent], "index.html", { type: "text/html" });
+                uploadedFiles.push(htmlFile);
+                localStorage.setItem('myFiles', JSON.stringify(uploadedFiles));
+                updateFilesDisplay();
+            }
+        });
+    </script>
+</body>
+</html>
